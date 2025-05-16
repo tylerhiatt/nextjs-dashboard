@@ -28,12 +28,16 @@ export async function createInvoice(formData: FormData) {
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  `;
+  try {
+    await sql`
+        INSERT INTO invoices (customer_id, amount, status, date)
+        VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+    `;
+  } catch (e) {
+    console.error(e);
+  }
 
-  revalidatePath("/dashboard/invoices"); // fresh data from server
+  revalidatePath("/dashboard/invoices"); // fresh data from server, only run if sql was successful
   redirect("/dashboard/invoices");
 }
 
@@ -46,11 +50,16 @@ export async function updateInvoice(id: string, formData: FormData) {
 
   const amountInCents = amount * 100;
 
-  await sql`
+  try {
+    await sql`
         UPDATE invoices
         SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
         WHERE id = ${id}
     `;
+  } catch (e) {
+    console.error(e);
+  }
+
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
